@@ -13,6 +13,7 @@ let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 let canJump = false;
+let sprint = false;
 
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
@@ -20,153 +21,163 @@ const direction = new THREE.Vector3();
 const vertex = new THREE.Vector3();
 const color = new THREE.Color();
 
-init();
-animate();
-
-function init() {
-
-	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-	camera.position.y = 10;
-
-	scene = new THREE.Scene();
-	scene.background = new THREE.Color( 0xffffff );
-	scene.fog = new THREE.Fog( 0xffffff, 100, 2000 );
-
-	const light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
-	light.position.set( 0.5, 1, 0.75 );
-	scene.add( light );
-
-	controls = new PointerLockControls( camera, document.body );
-
-	document.body.addEventListener( 'click', function () {
-
-		controls.lock();
-
-	} );
 
 
-	scene.add( controls.getObject() );
+camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
+camera.position.y = 10;
 
-	const onKeyDown = function ( event ) {
+scene = new THREE.Scene();
+scene.background = new THREE.Color( 0xaaaaff );
+scene.fog = new THREE.Fog( 0xffffff, 100, 1000 );
 
-		switch ( event.code ) {
+const hemisphere_light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.4 );
+hemisphere_light.position.set( 0.5, 1, 0.75 );
+scene.add( hemisphere_light );
 
-			case 'ArrowUp':
-			case 'KeyW':
-				moveForward = true;
-				break;
+const directional_light = new THREE.DirectionalLight(0xaaaaff, 0.75);
+directional_light.position.set(100,10,0);
+directional_light.target.position.set(0, 0, 0);
+scene.add(directional_light);
+scene.add(directional_light.target);
 
-			case 'ArrowLeft':
-			case 'KeyA':
-				moveLeft = true;
-				break;
+controls = new PointerLockControls( camera, document.body );
 
-			case 'ArrowDown':
-			case 'KeyS':
-				moveBackward = true;
-				break;
+document.body.addEventListener( 'click', function () {
 
-			case 'ArrowRight':
-			case 'KeyD':
-				moveRight = true;
-				break;
+	controls.lock();
 
-			case 'Space':
-				if ( canJump === true ) velocity.y += 350;
-				canJump = false;
-				break;
+} );
 
-		}
 
-	};
+scene.add( controls.getObject() );
 
-	const onKeyUp = function ( event ) {
+const onKeyDown = function ( event ) {
 
-		switch ( event.code ) {
+	switch ( event.code ) {
 
-			case 'ArrowUp':
-			case 'KeyW':
-				moveForward = false;
-				break;
+		case 'ArrowUp':
+		case 'KeyW':
+			moveForward = true;
+			break;
 
-			case 'ArrowLeft':
-			case 'KeyA':
-				moveLeft = false;
-				break;
+		case 'ArrowLeft':
+		case 'KeyA':
+			moveLeft = true;
+			break;
 
-			case 'ArrowDown':
-			case 'KeyS':
-				moveBackward = false;
-				break;
+		case 'ArrowDown':
+		case 'KeyS':
+			moveBackward = true;
+			break;
 
-			case 'ArrowRight':
-			case 'KeyD':
-				moveRight = false;
-				break;
+		case 'ArrowRight':
+		case 'KeyD':
+			moveRight = true;
+			break;
 
-		}
-
-	};
-
-	document.addEventListener( 'keydown', onKeyDown );
-	document.addEventListener( 'keyup', onKeyUp );
-
-	raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
-
-	// floor
-
-	let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
-	floorGeometry.rotateX( - Math.PI / 2 );
-
-	// vertex displacement
-
-	let position = floorGeometry.attributes.position;
-
-	for ( let i = 0, l = position.count; i < l; i ++ ) {
-
-		vertex.fromBufferAttribute( position, i );
-
-		// Big hills
-		vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 900) * 50
-
-		// Small details
-		vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 50) * 10
-
-		position.setY( i, vertex.y );
+		case 'Space':
+			if ( canJump === true ) velocity.y += 350;
+			canJump = false;
+			break;
+		case 'ShiftLeft':
+			sprint = true;
+			break;
 
 	}
 
-	floorGeometry = floorGeometry.toNonIndexed(); // ensure each face has unique vertices
+};
 
-	position = floorGeometry.attributes.position;
-	const colorsFloor = [];
+const onKeyUp = function ( event ) {
 
-	for ( let i = 0, l = position.count; i < l; i ++ ) {
+	switch ( event.code ) {
 
-		color.setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
-		colorsFloor.push( color.r, color.g, color.b );
+		case 'ArrowUp':
+		case 'KeyW':
+			moveForward = false;
+			break;
+
+		case 'ArrowLeft':
+		case 'KeyA':
+			moveLeft = false;
+			break;
+
+		case 'ArrowDown':
+		case 'KeyS':
+			moveBackward = false;
+			break;
+
+		case 'ArrowRight':
+		case 'KeyD':
+			moveRight = false;
+			break;
+		case 'ShiftLeft':
+			sprint = false;
+			break;
 
 	}
 
-	floorGeometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colorsFloor, 3 ) );
+};
 
-	const floorMaterial = new THREE.MeshBasicMaterial( { vertexColors: true } );
+document.addEventListener( 'keydown', onKeyDown );
+document.addEventListener( 'keyup', onKeyUp );
 
-	const floor = new THREE.Mesh( floorGeometry, floorMaterial );
-	scene.add( floor );
-	objects.push( floor );
+raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 60 );
 
+// floor
 
-	renderer = new THREE.WebGLRenderer( { antialias: true } );
-	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( window.innerWidth, window.innerHeight );
-	document.body.appendChild( renderer.domElement );
+let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 10, 10 );
+floorGeometry.rotateX( - Math.PI / 2 );
 
-	//
+// vertex displacement
 
-	window.addEventListener( 'resize', onWindowResize );
+let position = floorGeometry.attributes.position;
+
+for ( let i = 0, l = position.count; i < l; i ++ ) {
+
+	vertex.fromBufferAttribute( position, i );
+
+	// Big hills
+	vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 900) * 50
+
+	// Small details
+	vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 150) * 10
+
+	position.setY( i, vertex.y );
 
 }
+
+//floorGeometry = floorGeometry.toNonIndexed(); // ensure each face has unique vertices
+
+//position = floorGeometry.attributes.position;
+//const colorsFloor = [];
+
+//for ( let i = 0, l = position.count; i < l; i ++ ) {
+
+	//color.setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+	//colorsFloor.push( color.r, color.g, color.b );
+
+//}
+
+//floorGeometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colorsFloor, 3 ) );
+
+const floorMaterial = new THREE.MeshStandardMaterial({
+	color: 0xff0000,
+	flatShading: true
+});
+
+const floor = new THREE.Mesh( floorGeometry, floorMaterial );
+scene.add( floor );
+objects.push( floor );
+
+
+renderer = new THREE.WebGLRenderer( { antialias: true } );
+renderer.setPixelRatio( window.devicePixelRatio );
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+//
+
+window.addEventListener( 'resize', onWindowResize );
 
 function onWindowResize() {
 
@@ -181,12 +192,14 @@ function animate() {
 
 	requestAnimationFrame( animate );
 
+
 	const time = performance.now();
+
 
 	if ( controls.isLocked === true ) {
 
 		raycaster.ray.origin.copy( controls.getObject().position );
-		raycaster.ray.origin.y -= 10;
+		raycaster.ray.origin.y += 40;
 
 		const intersections = raycaster.intersectObjects( objects, false );
 
@@ -202,11 +215,25 @@ function animate() {
 		direction.z = Number( moveForward ) - Number( moveBackward );
 		direction.x = Number( moveRight ) - Number( moveLeft );
 		direction.normalize(); // this ensures consistent movements in all directions
+		
+		let sprintmod = 1;
+		if (sprint) {
+			sprintmod = 3;
+		}
 
-		if ( moveForward || moveBackward ) velocity.z -= direction.z * 400.0 * delta;
-		if ( moveLeft || moveRight ) velocity.x -= direction.x * 400.0 * delta;
+
+		if ( moveForward || moveBackward ) velocity.z -= direction.z * 400.0 * delta * sprintmod;
+		if ( moveLeft || moveRight ) velocity.x -= direction.x * 400.0 * delta * sprintmod;
 
 		if ( onObject === true ) {
+			let highest_object = intersections[0];
+			for (var i = 1; i<intersections.length; i++) {
+				if (intersections[i].distance < highest_object.distance) {
+					highest_object = intersections[i]
+				}
+			}
+
+			controls.getObject().position.y += (60-highest_object.distance);
 
 			velocity.y = Math.max( 0, velocity.y );
 			canJump = true;
@@ -234,3 +261,4 @@ function animate() {
 	renderer.render( scene, camera );
 
 }
+animate();
