@@ -31,7 +31,7 @@ scene = new THREE.Scene();
 // Set up lighting
 
 scene.background = new THREE.Color( 0xaaaaff );
-scene.fog = new THREE.Fog( 0xffffff, 100, 1000 );
+scene.fog = new THREE.Fog( 0xaaaaaa, 100, 1000 );
 
 const hemisphere_light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.4 );
 hemisphere_light.position.set( 0.5, 1, 0.75 );
@@ -152,8 +152,8 @@ for ( let i = 0, l = position.count; i < l; i ++ ) {
 // Create canvas for floor texture rendering
 
 const ctx = document.createElement('canvas').getContext('2d');
-ctx.canvas.width = 256;
-ctx.canvas.height = 256;
+ctx.canvas.width = 1024;
+ctx.canvas.height = 1024;
 ctx.fillStyle = '#FFF';
 ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
  
@@ -169,8 +169,8 @@ function drawRandomDot() {
   ctx.fillStyle = `#${randInt(0x1000000).toString(16).padStart(6, '0')}`;
   ctx.beginPath();
  
-  const x = randInt(256);
-  const y = randInt(256);
+  const x = randInt(1024);
+  const y = randInt(1024);
   const radius = randInt(10, 64);
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fill();
