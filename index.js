@@ -131,35 +131,38 @@ document.addEventListener( 'keyup', onKeyUp );
 
 raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 60 );
 
-let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
-floorGeometry.rotateX( - Math.PI / 2 );
+//let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
+//floorGeometry.rotateX( - Math.PI / 2 );
 
 
-let position = floorGeometry.attributes.position;
+//let position = floorGeometry.attributes.position;
 
-for ( let i = 0, l = position.count; i < l; i ++ ) {
+//for ( let i = 0, l = position.count; i < l; i ++ ) {
 
-	vertex.fromBufferAttribute( position, i );
+	//vertex.fromBufferAttribute( position, i );
 
-	// Big hills
-	vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 900) * 100
+	//// Big hills
+	//vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 900) * 100
 
-	position.setY( i, vertex.y );
+	//position.setY( i, vertex.y );
 
-}
+//}
 
 var paramFunc = function(u, v, vec){
-	vec.setX(u*2000-1000);
-	vec.setZ(v*2000-1000);
-	vec.setY(TILES.perlin_noise(vertex.x, vertex.z, 1000, 900) * 100);
+	let x = u*2000-1000;
+	let z = v*1000-1000;
+
+	vec.setX(x);
+	vec.setZ(z);
+	vec.setY(TILES.perlin_noise(x, z, 1000, 900) * 500);
 	return v;
 }
 
-let paramermetricFloorGeometry = new ParametricGeometry(paramFunc, 8, 8)
+let paramermetricFloorGeometry = new ParametricGeometry(paramFunc, 100, 100)
 
 // Create canvas for floor texture rendering
 
-const ground_res = 8192;
+const ground_res = 4096;
 
 const ctx = document.createElement('canvas').getContext('2d');
 ctx.canvas.width = ground_res;
@@ -198,6 +201,7 @@ const floorMaterial = new THREE.MeshStandardMaterial({
 	metalness: 0,
 	map: texture,
 });
+floorMaterial.side = THREE.DoubleSide;
 
 const floor = new THREE.Mesh( paramermetricFloorGeometry, floorMaterial );
 scene.add( floor );
@@ -282,10 +286,10 @@ function animate() {
 
 		controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 
-		if ( controls.getObject().position.y < 0 ) {
+		if ( controls.getObject().position.y < -500 ) {
 
 			velocity.y = 0;
-			controls.getObject().position.y = 0;
+			controls.getObject().position.y = 500;
 			controls.getObject().position.x = 0;
 			controls.getObject().position.z = 0;
 
