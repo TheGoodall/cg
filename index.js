@@ -150,11 +150,11 @@ raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1,
 
 var paramFunc = function(u, v, vec){
 	let x = u*2000-1000;
-	let z = v*1000-1000;
+	let z = v*2000-1000;
 
 	vec.setX(x);
 	vec.setZ(z);
-	vec.setY(TILES.perlin_noise(x, z, 1000, 900) * 500);
+	vec.setY(TILES.perlin_noise(x, z, 1000, 900) * 150);
 	return v;
 }
 
