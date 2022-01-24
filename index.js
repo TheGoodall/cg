@@ -27,6 +27,9 @@ camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight
 camera.position.y = 10;
 
 scene = new THREE.Scene();
+
+// Set up lighting
+
 scene.background = new THREE.Color( 0xaaaaff );
 scene.fog = new THREE.Fog( 0xffffff, 100, 1000 );
 
@@ -39,6 +42,8 @@ directional_light.position.set(100,10,0);
 directional_light.target.position.set(0, 0, 0);
 scene.add(directional_light);
 scene.add(directional_light.target);
+
+// Set up controls
 
 controls = new PointerLockControls( camera, document.body );
 
@@ -121,14 +126,12 @@ const onKeyUp = function ( event ) {
 document.addEventListener( 'keydown', onKeyDown );
 document.addEventListener( 'keyup', onKeyUp );
 
-raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 60 );
+// Set up floor and physics
 
-// floor
+raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 60 );
 
 let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 10, 10 );
 floorGeometry.rotateX( - Math.PI / 2 );
-
-// vertex displacement
 
 let position = floorGeometry.attributes.position;
 
@@ -146,23 +149,10 @@ for ( let i = 0, l = position.count; i < l; i ++ ) {
 
 }
 
-//floorGeometry = floorGeometry.toNonIndexed(); // ensure each face has unique vertices
-
-//position = floorGeometry.attributes.position;
-//const colorsFloor = [];
-
-//for ( let i = 0, l = position.count; i < l; i ++ ) {
-
-	//color.setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
-	//colorsFloor.push( color.r, color.g, color.b );
-
-//}
-
-//floorGeometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colorsFloor, 3 ) );
-
 const floorMaterial = new THREE.MeshStandardMaterial({
 	color: 0xff0000,
-	flatShading: true
+	roughness: 1,
+	metalness: 0,
 });
 
 const floor = new THREE.Mesh( floorGeometry, floorMaterial );
@@ -170,12 +160,14 @@ scene.add( floor );
 objects.push( floor );
 
 
+// Set up renderer
+
 renderer = new THREE.WebGLRenderer( { antialias: true } );
 renderer.setPixelRatio( window.devicePixelRatio );
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-//
+// Add resize listener
 
 window.addEventListener( 'resize', onWindowResize );
 
