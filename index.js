@@ -126,7 +126,7 @@ const onKeyUp = function ( event ) {
 document.addEventListener( 'keydown', onKeyDown );
 document.addEventListener( 'keyup', onKeyUp );
 
-// Set up floor and physics
+// Set up floor
 
 raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 60 );
 
@@ -149,10 +149,41 @@ for ( let i = 0, l = position.count; i < l; i ++ ) {
 
 }
 
+// Create canvas for floor texture rendering
+
+const ctx = document.createElement('canvas').getContext('2d');
+ctx.canvas.width = 256;
+ctx.canvas.height = 256;
+ctx.fillStyle = '#FFF';
+ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+ 
+function randInt(min, max) {
+  if (max === undefined) {
+    max = min;
+    min = 0;
+  }
+  return Math.random() * (max - min) + min | 0;
+}
+ 
+function drawRandomDot() {
+  ctx.fillStyle = `#${randInt(0x1000000).toString(16).padStart(6, '0')}`;
+  ctx.beginPath();
+ 
+  const x = randInt(256);
+  const y = randInt(256);
+  const radius = randInt(10, 64);
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+const texture = new THREE.CanvasTexture(ctx.canvas);
+
+// Create floor material
+
 const floorMaterial = new THREE.MeshStandardMaterial({
-	color: 0xff0000,
 	roughness: 1,
 	metalness: 0,
+	map: texture,
 });
 
 const floor = new THREE.Mesh( floorGeometry, floorMaterial );
@@ -180,12 +211,16 @@ function onWindowResize() {
 
 }
 
+
+
+// Animate function
+
 function animate() {
 
-	requestAnimationFrame( animate );
-
-
 	const time = performance.now();
+
+	drawRandomDot();
+	texture.needsUpdate = true;
 
 
 	if ( controls.isLocked === true ) {
@@ -251,6 +286,8 @@ function animate() {
 	prevTime = time;
 
 	renderer.render( scene, camera );
+
+	requestAnimationFrame( animate );
 
 }
 animate();
