@@ -149,8 +149,8 @@ for ( let i = 0, l = position.count; i < l; i ++ ) {
 // Create canvas for floor texture rendering
 
 const ctx = document.createElement('canvas').getContext('2d');
-ctx.canvas.width = 1024;
-ctx.canvas.height = 1024;
+ctx.canvas.width = 2048;
+ctx.canvas.height = 2048;
 ctx.fillStyle = '#FFF';
 ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
  
@@ -166,8 +166,8 @@ function drawRandomDot() {
   ctx.fillStyle = `#${randInt(0x1000000).toString(16).padStart(6, '0')}`;
   ctx.beginPath();
  
-  const x = randInt(1024);
-  const y = randInt(1024);
+  const x = randInt(2048);
+  const y = randInt(2048);
   const radius = randInt(10, 64);
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fill();
@@ -269,10 +269,12 @@ function animate() {
 
 		controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 
-		if ( controls.getObject().position.y < 10 ) {
+		if ( controls.getObject().position.y < -500 ) {
 
 			velocity.y = 0;
-			controls.getObject().position.y = 10;
+			controls.getObject().position.y = 100;
+			controls.getObject().position.x = 0;
+			controls.getObject().position.z = 0;
 
 			canJump = true;
 
