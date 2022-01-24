@@ -1,5 +1,6 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
 import { PointerLockControls } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/PointerLockControls.js';
+import { ParametricGeometry } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/geometries/ParametricGeometry.js';
 import * as TILES from './city_tiles.js';
 
 let camera, scene, renderer, controls;
@@ -133,6 +134,7 @@ raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1,
 let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
 floorGeometry.rotateX( - Math.PI / 2 );
 
+
 let position = floorGeometry.attributes.position;
 
 for ( let i = 0, l = position.count; i < l; i ++ ) {
@@ -146,34 +148,48 @@ for ( let i = 0, l = position.count; i < l; i ++ ) {
 
 }
 
+var paramFunc = function(u, v, vec){
+	vec.setX(u*2000-1000);
+	vec.setZ(v*2000-1000);
+	vec.setY(TILES.perlin_noise(vertex.x, vertex.z, 1000, 900) * 100);
+	return v;
+}
+
+let paramermetricFloorGeometry = new ParametricGeometry(paramFunc, 8, 8)
+
 // Create canvas for floor texture rendering
 
+const ground_res = 8192;
+
 const ctx = document.createElement('canvas').getContext('2d');
-ctx.canvas.width = 2048;
-ctx.canvas.height = 2048;
+ctx.canvas.width = ground_res;
+ctx.canvas.height = ground_res;
 ctx.fillStyle = '#FFF';
 ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
- 
-function randInt(min, max) {
-  if (max === undefined) {
-    max = min;
-    min = 0;
-  }
-  return Math.random() * (max - min) + min | 0;
-}
- 
-function drawRandomDot() {
-  ctx.fillStyle = `#${randInt(0x1000000).toString(16).padStart(6, '0')}`;
-  ctx.beginPath();
- 
-  const x = randInt(2048);
-  const y = randInt(2048);
-  const radius = randInt(10, 64);
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fill();
-}
 
 const texture = new THREE.CanvasTexture(ctx.canvas);
+
+const grass_scale = 32;
+
+var grass = new Image();
+grass.onload = function() {
+	for (var i = 0; i < grass_scale*2; i++) {
+		for (var j = 0; j < grass_scale*2; j++) {
+			ctx.drawImage(
+				grass,
+				j * (ground_res/grass_scale)/2 +
+					Math.random()*ground_res/grass_scale/4,
+				i * (ground_res/grass_scale)/2 + 
+					Math.random()*ground_res/grass_scale/4,
+				ground_res/grass_scale,
+				ground_res/grass_scale);
+		}
+	}
+	texture.needsUpdate = true;
+}
+grass.src = 'images/grass.jpg';
+ 
+
 
 // Create floor material
 
@@ -183,7 +199,7 @@ const floorMaterial = new THREE.MeshStandardMaterial({
 	map: texture,
 });
 
-const floor = new THREE.Mesh( floorGeometry, floorMaterial );
+const floor = new THREE.Mesh( paramermetricFloorGeometry, floorMaterial );
 scene.add( floor );
 objects.push( floor );
 
@@ -215,9 +231,6 @@ function onWindowResize() {
 function animate() {
 
 	const time = performance.now();
-
-	drawRandomDot();
-	texture.needsUpdate = true;
 
 
 	if ( controls.isLocked === true ) {
@@ -269,10 +282,10 @@ function animate() {
 
 		controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 
-		if ( controls.getObject().position.y < -500 ) {
+		if ( controls.getObject().position.y < 0 ) {
 
 			velocity.y = 0;
-			controls.getObject().position.y = 100;
+			controls.getObject().position.y = 0;
 			controls.getObject().position.x = 0;
 			controls.getObject().position.z = 0;
 
