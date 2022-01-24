@@ -130,7 +130,7 @@ document.addEventListener( 'keyup', onKeyUp );
 
 raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 60 );
 
-let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 10, 10 );
+let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
 floorGeometry.rotateX( - Math.PI / 2 );
 
 let position = floorGeometry.attributes.position;
@@ -140,10 +140,7 @@ for ( let i = 0, l = position.count; i < l; i ++ ) {
 	vertex.fromBufferAttribute( position, i );
 
 	// Big hills
-	vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 900) * 50
-
-	// Small details
-	vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 150) * 10
+	vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 900) * 100
 
 	position.setY( i, vertex.y );
 
