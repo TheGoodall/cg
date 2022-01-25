@@ -153,6 +153,18 @@ ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
 const texture = new THREE.CanvasTexture(ctx.canvas);
 
+let place_image = function(image, x, y, x_size, y_size, rotation) {
+	ctx.translate(x+x_size/2, y+y_size/2);
+	ctx.rotate(rotation*Math.PI/2);
+	ctx.translate(-x-x_size/2, -y-y_size/2);
+	ctx.drawImage(
+		image,
+		x,
+		y,
+		x_size,
+		y_size);
+	ctx.setTransform(1,0,0,1,0,0)
+}
 
 
 let grass = new Image();
@@ -163,13 +175,17 @@ var road = new Image();
 road.src = 'images/road.jpg';
 let road_loaded = false;
 
+var road_junc = new Image();
+road_junc.src = 'images/road_4-way.jpg';
+let road_junc_loaded = false;
+
 let images_loaded = function(){
 
 	const grass_scale = 16;
 
 	for (var i = 0; i < grass_scale*2; i++) {
 		for (var j = 0; j < grass_scale*2; j++) {
-			ctx.drawImage(
+			place_image(
 				grass,
 				j * (ground_res/grass_scale)/2 +
 					Math.random()*ground_res/grass_scale/4,
@@ -185,12 +201,39 @@ let images_loaded = function(){
 	for (var i = 0; i < road_scale; i++) {
 		for (var j = 0; j < road_scale; j++) {
 			if (j%4 == 0 || i%4 == 0) {
-				ctx.drawImage(
-					road,
-					j * (ground_res/road_scale),
-					i * (ground_res/road_scale),
-					ground_res/road_scale,
-					ground_res/road_scale);
+				if (j%4 == 0 && i%4 == 0) {
+					// Crossroads
+					place_image(
+						road_junc,
+						j * (ground_res/road_scale),
+						i * (ground_res/road_scale),
+						ground_res/road_scale,
+						ground_res/road_scale,
+						1
+					);
+				} else if (j%4 == 0) {
+					// vertical
+					place_image(
+						road,
+						j * (ground_res/road_scale),
+						i * (ground_res/road_scale),
+						ground_res/road_scale,
+						ground_res/road_scale,
+						1
+					);
+
+				} else if (i%4 == 0) {
+					// horizontal
+					place_image(
+						road,
+						j * (ground_res/road_scale),
+						i * (ground_res/road_scale),
+						ground_res/road_scale,
+						ground_res/road_scale,
+						0
+					);
+
+				}
 
 			}
 		}
@@ -198,15 +241,29 @@ let images_loaded = function(){
 	texture.needsUpdate = true;
 }
 
+let check_images_loaded = function() {
+	if (grass_loaded && road_loaded && road_junc_loaded) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 grass.onload = function() {
 	grass_loaded = true;
-	if (grass_loaded && road_loaded) {
+	if (check_images_loaded) {
 		images_loaded();
 	}
 }
 road.onload = function() {
 	road_loaded = true;
-	if (grass_loaded && road_loaded) {
+	if (check_images_loaded) {
+		images_loaded();
+	}
+}
+road_junc.onload = function() {
+	road_junc_loaded = true;
+	if (check_images_loaded) {
 		images_loaded();
 	}
 }
