@@ -162,7 +162,7 @@ let paramermetricFloorGeometry = new ParametricGeometry(paramFunc, 100, 100)
 
 // Create canvas for floor texture rendering
 
-const ground_res = 4096;
+const ground_res = 8192;
 
 const ctx = document.createElement('canvas').getContext('2d');
 ctx.canvas.width = ground_res;
@@ -172,10 +172,20 @@ ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
 const texture = new THREE.CanvasTexture(ctx.canvas);
 
-const grass_scale = 32;
 
-var grass = new Image();
-grass.onload = function() {
+
+let grass = new Image();
+grass.src = 'images/grass2.jpg';
+let grass_loaded = false;
+
+var road = new Image();
+road.src = 'images/road.jpg';
+let road_loaded = false;
+
+let images_loaded = function(){
+
+	const grass_scale = 16;
+
 	for (var i = 0; i < grass_scale*2; i++) {
 		for (var j = 0; j < grass_scale*2; j++) {
 			ctx.drawImage(
@@ -188,10 +198,40 @@ grass.onload = function() {
 				ground_res/grass_scale);
 		}
 	}
+
+	const road_scale = 32;
+
+	for (var i = 0; i < road_scale; i++) {
+		for (var j = 0; j < road_scale; j++) {
+			if (j%4 == 0 || i%4 == 0) {
+				ctx.drawImage(
+					road,
+					j * (ground_res/road_scale),
+					i * (ground_res/road_scale),
+					ground_res/road_scale,
+					ground_res/road_scale);
+
+			}
+		}
+	}
 	texture.needsUpdate = true;
 }
-grass.src = 'images/grass.jpg';
- 
+
+grass.onload = function() {
+	grass_loaded = true;
+	if (grass_loaded && road_loaded) {
+		images_loaded();
+	}
+}
+road.onload = function() {
+	road_loaded = true;
+	if (grass_loaded && road_loaded) {
+		images_loaded();
+	}
+}
+
+
+
 
 
 // Create floor material
