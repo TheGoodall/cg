@@ -129,25 +129,6 @@ document.addEventListener( 'keyup', onKeyUp );
 
 // Set up floor
 
-raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 60 );
-
-//let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
-//floorGeometry.rotateX( - Math.PI / 2 );
-
-
-//let position = floorGeometry.attributes.position;
-
-//for ( let i = 0, l = position.count; i < l; i ++ ) {
-
-	//vertex.fromBufferAttribute( position, i );
-
-	//// Big hills
-	//vertex.y += TILES.perlin_noise(vertex.x, vertex.z, 1000, 900) * 100
-
-	//position.setY( i, vertex.y );
-
-//}
-
 var paramFunc = function(u, v, vec){
 	let x = u*2000-1000;
 	let z = v*2000-1000;
@@ -279,13 +260,6 @@ function animate() {
 
 	if ( controls.isLocked === true ) {
 
-		raycaster.ray.origin.copy( controls.getObject().position );
-		raycaster.ray.origin.y += 40;
-
-		const intersections = raycaster.intersectObjects( objects, false );
-
-		const onObject = intersections.length > 0;
-
 		const delta = ( time - prevTime ) / 1000;
 
 		velocity.x -= velocity.x * 10.0 * delta;
@@ -306,32 +280,16 @@ function animate() {
 		if ( moveForward || moveBackward ) velocity.z -= direction.z * 400.0 * delta * sprintmod;
 		if ( moveLeft || moveRight ) velocity.x -= direction.x * 400.0 * delta * sprintmod;
 
-		if ( onObject === true ) {
-			let highest_object = intersections[0];
-			for (var i = 1; i<intersections.length; i++) {
-				if (intersections[i].distance < highest_object.distance) {
-					highest_object = intersections[i]
-				}
-			}
-
-			controls.getObject().position.y += (60-highest_object.distance);
-
-			velocity.y = Math.max( 0, velocity.y );
-			canJump = true;
-
-		}
-
 		controls.moveRight( - velocity.x * delta );
 		controls.moveForward( - velocity.z * delta );
 
 		controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 
-		if ( controls.getObject().position.y < -500 ) {
+		let height = TILES.perlin_noise(controls.getObject().position.x, controls.getObject().position.z, 1000, 900) * 150
+		if ( controls.getObject().position.y < height +20 ) {
 
 			velocity.y = 0;
-			controls.getObject().position.y = 500;
-			controls.getObject().position.x = 0;
-			controls.getObject().position.z = 0;
+			controls.getObject().position.y = height + 20;
 
 			canJump = true;
 
