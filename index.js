@@ -274,6 +274,9 @@ road_junc.onload = function() {
 
 // Create floor material
 
+texture.magFilter = THREE.LinearFilter;
+texture.minFilter = THREE.LinearMipmapLinearFilter;
+
 const floorMaterial = new THREE.MeshStandardMaterial({
 	roughness: 1,
 	metalness: 0,
