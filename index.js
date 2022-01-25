@@ -156,7 +156,7 @@ const texture = new THREE.CanvasTexture(ctx.canvas);
 
 
 let grass = new Image();
-grass.src = 'images/grass2.jpg';
+grass.src = 'images/grass.jpg';
 let grass_loaded = false;
 
 var road = new Image();
