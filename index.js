@@ -308,9 +308,12 @@ function onWindowResize() {
 
 
 // Generate skyscrapers
+const loader = new THREE.TextureLoader();
 
 const geometry = new THREE.BoxGeometry( 2 * 2000/road_scale, 100, 2 * 2000/road_scale );
-const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+const material = new THREE.MeshStandardMaterial( {
+	map: loader.load('images/building.jpg'),
+});
 
 let matrices = [];
 
