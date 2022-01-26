@@ -5,6 +5,9 @@ import {
 import {
     ParametricGeometry
 } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/geometries/ParametricGeometry.js';
+import {
+    GLTFLoader
+} from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js';
 import * as TILES from './city_tiles.js';
 
 let camera, scene, renderer, controls;
@@ -131,7 +134,7 @@ document.addEventListener('keyup', onKeyUp);
 
 // Set up floor
 
-var paramFunc = function(u, v, vec) {
+let paramFunc = function(u, v, vec) {
     let x = u * 2000 - 1000;
     let z = v * 2000 - 1000;
 
@@ -175,11 +178,11 @@ let grass = new Image();
 grass.src = 'images/grass.jpg';
 let grass_loaded = false;
 
-var road = new Image();
+let road = new Image();
 road.src = 'images/road.jpg';
 let road_loaded = false;
 
-var road_junc = new Image();
+let road_junc = new Image();
 road_junc.src = 'images/road_4-way.jpg';
 let road_junc_loaded = false;
 
@@ -188,8 +191,8 @@ let images_loaded = function() {
 
     const grass_scale = 16;
 
-    for (var i = 0; i < grass_scale * 2; i++) {
-        for (var j = 0; j < grass_scale * 2; j++) {
+    for (let i = 0; i < grass_scale * 2; i++) {
+        for (let j = 0; j < grass_scale * 2; j++) {
             place_image(
                 grass,
                 j * (ground_res / grass_scale) / 2 +
@@ -202,8 +205,8 @@ let images_loaded = function() {
     }
 
 
-    for (var i = 0; i < road_scale; i++) {
-        for (var j = 0; j < road_scale; j++) {
+    for (let i = 0; i < road_scale; i++) {
+        for (let j = 0; j < road_scale; j++) {
             if (j % 4 == 0 || i % 4 == 0) {
                 if (j % 4 == 0 && i % 4 == 0) {
                     // Crossroads
@@ -317,12 +320,9 @@ function onWindowResize() {
 
 
 // Generate skyscrapers
+
 const loader = new THREE.TextureLoader();
 
-const geometry = new THREE.BoxGeometry(2 * 2000 / road_scale, 100, 2 * 2000 / road_scale);
-const material = new THREE.MeshStandardMaterial({
-    map: loader.load('images/building.jpg'),
-});
 
 // Rotation
 const rotation = new THREE.Euler();
@@ -330,38 +330,65 @@ rotation.x, rotation.y, rotation.z = 0
 const quaternion = new THREE.Quaternion();
 quaternion.setFromEuler(rotation);
 
-for (var i = 0; i < road_scale / 4; i++) {
-    for (var j = 0; j < road_scale / 4; j++) {
-        // Position
-        let x = 2000 / road_scale * (i + 1) * 4 - 1000 - (1.5 * 2000 / road_scale);
-        let z = 2000 / road_scale * j * 4 - 1000 + (1.5 * 2000 / road_scale);
+
+const gltf_loader = new GLTFLoader();
+gltf_loader.load('blender/building_cube.glb', function(gltf) {
+    const mesh = gltf.scene.children[1];
+
+    let building_mesh = mesh.geometry.clone();
+    let building_material = mesh.material.clone();
+
+	console.log("hello")
+	const geometry = new THREE.BoxGeometry(2,2,2);
+	const material = new THREE.MeshStandardMaterial({
+		map: loader.load('images/building.jpg'),
+		color: 0xffffff,
+	});
+
+    for (let i = 0; i < road_scale / 4; i++) {
+        for (let j = 0; j < road_scale / 4; j++) {
+            // Position
+            let x = 2000 / road_scale * (i + 1) * 4 - 1000 - (1.5 * 2000 / road_scale);
+            let z = 2000 / road_scale * j * 4 - 1000 + (1.5 * 2000 / road_scale);
 
 
-        // Scale
-        const scale = new THREE.Vector3();
-        scale.y = 1;
-        scale.x = Math.random() + 0.5;
-        scale.z = Math.random() + 0.5;
+            // Scale
+            const scale = new THREE.Vector3();
+            scale.y = 100;
+            scale.x = (Math.random() + 0.5) * 2000 / road_scale;
+            scale.z = (Math.random() + 0.5) * 2000 / road_scale;
 
-        let height = Math.max(Math.round(2 + TILES.perlin_noise(x, z, 2000, 900) * 10), 0)
+            let height = Math.max(Math.round(2 + TILES.perlin_noise(x, z, 2000, 900) * 10), 0)
 
-        const cubes = new THREE.InstancedMesh(geometry, material, height);
+            let lod = new THREE.LOD();
+
+            const cubes = new THREE.InstancedMesh(geometry, material, height);
+            const non_cubes = new THREE.InstancedMesh(building_mesh, building_material, height);
 
 
-        for (var k = 0; k < height; k++) {
-            const position = new THREE.Vector3();
-            position.x = x;
-            position.z = z;
+            for (let k = 0; k < height; k++) {
+                const position = new THREE.Vector3();
+                position.x = 0;
+                position.z = 0;
 
-            position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150) + 100 * k;
+                position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150) + 100 * k;
 
-            const matrix = new THREE.Matrix4();
-            matrix.compose(position, quaternion, scale);
-            cubes.setMatrixAt(k, matrix);
-            scene.add(cubes);
+                const matrix = new THREE.Matrix4();
+                matrix.compose(position, quaternion, scale);
+                cubes.setMatrixAt(k, matrix);
+                non_cubes.setMatrixAt(k, matrix);
+            }
+			lod.addLevel(cubes, 500);
+			lod.addLevel(non_cubes, 0);
+			lod.position.setX(x);
+			lod.position.setZ(z);
+            scene.add(lod);
         }
     }
-}
+
+})
+
+animate();
 
 
 
@@ -370,6 +397,7 @@ for (var i = 0; i < road_scale / 4; i++) {
 // Animate function
 
 function animate() {
+    requestAnimationFrame(animate);
 
     const time = performance.now();
 
@@ -417,7 +445,5 @@ function animate() {
 
     renderer.render(scene, camera);
 
-    requestAnimationFrame(animate);
 
 }
-animate();
