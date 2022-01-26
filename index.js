@@ -338,11 +338,10 @@ gltf_loader.load('blender/building_cube.glb', function(gltf) {
     let building_mesh = mesh.geometry.clone();
     let building_material = mesh.material.clone();
 
-	console.log("hello")
 	const geometry = new THREE.BoxGeometry(2,2,2);
 	const material = new THREE.MeshStandardMaterial({
 		map: loader.load('images/building.jpg'),
-		color: 0xffffff,
+		color: 0xbbbbbb,
 	});
 
     for (let i = 0; i < road_scale / 4; i++) {
@@ -371,7 +370,7 @@ gltf_loader.load('blender/building_cube.glb', function(gltf) {
                 position.x = 0;
                 position.z = 0;
 
-                position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150) + 100 * k;
+                position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150) + 200 * k;
 
                 const matrix = new THREE.Matrix4();
                 matrix.compose(position, quaternion, scale);
