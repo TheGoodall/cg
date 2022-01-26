@@ -317,13 +317,8 @@ let matrices = [];
 for (var i = 0; i < road_scale/4; i++) {
 	for (var j = 0; j < road_scale/4; j++) {
 		// Position
-		const position = new THREE.Vector3();
 		let x = 2000/road_scale * (i+1) * 4 - 1000 - (1.5 * 2000/road_scale);
 		let z = 2000/road_scale * j * 4 - 1000 + (1.5 * 2000/road_scale);
-		position.x = x;
-		position.z = z;
-
-		position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150);
 
 		// Rotation
 		const rotation = new THREE.Euler();
@@ -333,13 +328,25 @@ for (var i = 0; i < road_scale/4; i++) {
 
 		// Scale
 		const scale = new THREE.Vector3();
-		scale.x = scale.y = scale.z =1;
+		scale.y = 1;
+		scale.x = Math.random() + 0.5;
+		scale.z = Math.random() + 0.5;
 
 
-		const matrix = new THREE.Matrix4();
-		matrix.compose( position, quaternion, scale );
-		
-		matrices.push(matrix);
+		for (var k = 0; k<1+TILES.perlin_noise(x, z, 2000, 900) * 20; k++) {
+			const position = new THREE.Vector3();
+			position.x = x;
+			position.z = z;
+
+			position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150) + 100 * k;
+
+
+
+			const matrix = new THREE.Matrix4();
+			matrix.compose( position, quaternion, scale );
+			
+			matrices.push(matrix);
+		}	
 	}
 }
 
