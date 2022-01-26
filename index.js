@@ -318,7 +318,11 @@ const material = new THREE.MeshStandardMaterial( {
 	map: loader.load('images/building.jpg'),
 });
 
-let matrices = [];
+// Rotation
+const rotation = new THREE.Euler();
+rotation.x, rotation.y, rotation.z = 0
+const quaternion = new THREE.Quaternion();
+quaternion.setFromEuler( rotation );
 
 for (var i = 0; i < road_scale/4; i++) {
 	for (var j = 0; j < road_scale/4; j++) {
@@ -326,11 +330,6 @@ for (var i = 0; i < road_scale/4; i++) {
 		let x = 2000/road_scale * (i+1) * 4 - 1000 - (1.5 * 2000/road_scale);
 		let z = 2000/road_scale * j * 4 - 1000 + (1.5 * 2000/road_scale);
 
-		// Rotation
-		const rotation = new THREE.Euler();
-		rotation.x, rotation.y, rotation.z = 0
-		const quaternion = new THREE.Quaternion();
-		quaternion.setFromEuler( rotation );
 
 		// Scale
 		const scale = new THREE.Vector3();
@@ -338,31 +337,27 @@ for (var i = 0; i < road_scale/4; i++) {
 		scale.x = Math.random() + 0.5;
 		scale.z = Math.random() + 0.5;
 
+		let height = Math.max(Math.round(2+TILES.perlin_noise(x, z, 2000, 900) * 10), 0)
 
-		for (var k = 0; k<1+TILES.perlin_noise(x, z, 2000, 900) * 20; k++) {
+		const cubes = new THREE.InstancedMesh( geometry, material, height );
+
+
+		for (var k = 0; k<height; k++) {
 			const position = new THREE.Vector3();
 			position.x = x;
 			position.z = z;
 
 			position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150) + 100 * k;
 
-
-
 			const matrix = new THREE.Matrix4();
 			matrix.compose( position, quaternion, scale );
-			
-			matrices.push(matrix);
-		}	
+			cubes.setMatrixAt(k, matrix);
+		scene.add( cubes );
+		}
 	}
 }
 
 
-const cubes = new THREE.InstancedMesh( geometry, material, matrices.length );
-for (var i = 0; i < matrices.length; i++) {
-	cubes.setMatrixAt(i, matrices[i]);
-	console.log("cube")
-}
-scene.add( cubes );
 
 
 
