@@ -165,6 +165,7 @@ let place_image = function(image, x, y, x_size, y_size, rotation) {
 	ctx.setTransform(1,0,0,1,0,0)
 }
 
+const road_scale = 32;
 
 let grass = new Image();
 grass.src = 'images/grass.jpg';
@@ -196,7 +197,6 @@ let images_loaded = function(){
 		}
 	}
 
-	const road_scale = 32;
 
 	for (var i = 0; i < road_scale; i++) {
 		for (var j = 0; j < road_scale; j++) {
@@ -305,6 +305,53 @@ function onWindowResize() {
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
+
+
+// Generate skyscrapers
+
+let count = 0;
+
+const geometry = new THREE.BoxGeometry( 10,10,10 );
+const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+
+let matrices = [];
+
+for (var i = 0; i < road_scale; i++) {
+	for (var j = 0; j < road_scale; j++) {
+		// Position
+		const position = new THREE.Vector3();
+		let x = (2000/road_scale * i - 1000);
+		let z = (2000/road_scale * j - 1000);
+		position.x = x;
+		position.z = z;
+
+		position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150) + 10;
+
+		// Rotation
+		const rotation = new THREE.Euler();
+		rotation.x, rotation.y, rotation.z = 0
+		const quaternion = new THREE.Quaternion();
+		quaternion.setFromEuler( rotation );
+
+		// Scale
+		const scale = new THREE.Vector3();
+		scale.x = scale.y = scale.z =1;
+
+
+		const matrix = new THREE.Matrix4();
+		matrix.compose( position, quaternion, scale );
+		
+		matrices.push(matrix);
+	}
+}
+
+
+const cubes = new THREE.InstancedMesh( geometry, material, matrices.length );
+for (var i = 0; i < matrices.length; i++) {
+	cubes.setMatrixAt(i, matrices[i]);
+	console.log("cube")
+}
+scene.add( cubes );
 
 
 
