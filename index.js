@@ -7,8 +7,6 @@ let camera, scene, renderer, controls;
 
 const objects = [];
 
-let raycaster;
-
 let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
@@ -153,6 +151,7 @@ ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
 const texture = new THREE.CanvasTexture(ctx.canvas);
 
+// Function to place an image on a canvas given all the required parameters and a rotation (expressed as a multiple of 90)
 let place_image = function(image, x, y, x_size, y_size, rotation) {
 	ctx.translate(x+x_size/2, y+y_size/2);
 	ctx.rotate(rotation*Math.PI/2);
@@ -166,6 +165,7 @@ let place_image = function(image, x, y, x_size, y_size, rotation) {
 	ctx.setTransform(1,0,0,1,0,0)
 }
 
+const road_scale = 32;
 
 let grass = new Image();
 grass.src = 'images/grass.jpg';
@@ -179,6 +179,7 @@ var road_junc = new Image();
 road_junc.src = 'images/road_4-way.jpg';
 let road_junc_loaded = false;
 
+// Wait until all images have been loaded
 let images_loaded = function(){
 
 	const grass_scale = 16;
@@ -196,7 +197,6 @@ let images_loaded = function(){
 		}
 	}
 
-	const road_scale = 32;
 
 	for (var i = 0; i < road_scale; i++) {
 		for (var j = 0; j < road_scale; j++) {
@@ -308,6 +308,61 @@ function onWindowResize() {
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
+
+
+// Generate skyscrapers
+const loader = new THREE.TextureLoader();
+
+const geometry = new THREE.BoxGeometry( 2 * 2000/road_scale, 100, 2 * 2000/road_scale );
+const material = new THREE.MeshStandardMaterial( {
+	map: loader.load('images/building.jpg'),
+});
+
+let matrices = [];
+
+for (var i = 0; i < road_scale/4; i++) {
+	for (var j = 0; j < road_scale/4; j++) {
+		// Position
+		let x = 2000/road_scale * (i+1) * 4 - 1000 - (1.5 * 2000/road_scale);
+		let z = 2000/road_scale * j * 4 - 1000 + (1.5 * 2000/road_scale);
+
+		// Rotation
+		const rotation = new THREE.Euler();
+		rotation.x, rotation.y, rotation.z = 0
+		const quaternion = new THREE.Quaternion();
+		quaternion.setFromEuler( rotation );
+
+		// Scale
+		const scale = new THREE.Vector3();
+		scale.y = 1;
+		scale.x = Math.random() + 0.5;
+		scale.z = Math.random() + 0.5;
+
+
+		for (var k = 0; k<1+TILES.perlin_noise(x, z, 2000, 900) * 20; k++) {
+			const position = new THREE.Vector3();
+			position.x = x;
+			position.z = z;
+
+			position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150) + 100 * k;
+
+
+
+			const matrix = new THREE.Matrix4();
+			matrix.compose( position, quaternion, scale );
+			
+			matrices.push(matrix);
+		}	
+	}
+}
+
+
+const cubes = new THREE.InstancedMesh( geometry, material, matrices.length );
+for (var i = 0; i < matrices.length; i++) {
+	cubes.setMatrixAt(i, matrices[i]);
+	console.log("cube")
+}
+scene.add( cubes );
 
 
 
