@@ -309,23 +309,21 @@ function onWindowResize() {
 
 // Generate skyscrapers
 
-let count = 0;
-
-const geometry = new THREE.BoxGeometry( 10,10,10 );
+const geometry = new THREE.BoxGeometry( 2 * 2000/road_scale, 100, 2 * 2000/road_scale );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 
 let matrices = [];
 
-for (var i = 0; i < road_scale; i++) {
-	for (var j = 0; j < road_scale; j++) {
+for (var i = 0; i < road_scale/4; i++) {
+	for (var j = 0; j < road_scale/4; j++) {
 		// Position
 		const position = new THREE.Vector3();
-		let x = (2000/road_scale * i - 1000);
-		let z = (2000/road_scale * j - 1000);
+		let x = 2000/road_scale * (i+1) * 4 - 1000 - (1.5 * 2000/road_scale);
+		let z = 2000/road_scale * j * 4 - 1000 + (1.5 * 2000/road_scale);
 		position.x = x;
 		position.z = z;
 
-		position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150) + 10;
+		position.y = (TILES.perlin_noise(x, z, 1000, 900) * 150);
 
 		// Rotation
 		const rotation = new THREE.Euler();
