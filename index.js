@@ -151,6 +151,7 @@ ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
 const texture = new THREE.CanvasTexture(ctx.canvas);
 
+// Function to place an image on a canvas given all the required parameters and a rotation (expressed as a multiple of 90)
 let place_image = function(image, x, y, x_size, y_size, rotation) {
 	ctx.translate(x+x_size/2, y+y_size/2);
 	ctx.rotate(rotation*Math.PI/2);
@@ -177,6 +178,7 @@ var road_junc = new Image();
 road_junc.src = 'images/road_4-way.jpg';
 let road_junc_loaded = false;
 
+// Wait until all images have been loaded
 let images_loaded = function(){
 
 	const grass_scale = 16;
