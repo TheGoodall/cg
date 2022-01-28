@@ -1,0 +1,40 @@
+\documentclass{article}
+
+\usepackage[margin=0.5in]{geometry}
+
+\title{ACG}
+\author{James Goodall}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Virtual Environment Construction}
+
+The enviroment was constructed using a perlin noise generation function.
+Perlin noise was used in two ways.
+the height of the ground terrain, and the height of the buildings were both generated from perlin noise.
+This results in an organic feeling city, with different height buildings clustered together.
+
+\section{Application of multi-resolution modeling}
+
+The buildings all have two levels of detail, one as a texured cube, and another as a more complex 3d model.
+These 3d models are switched between by Three.js based on the distance of the camera from the object.
+In addition to this, Mipmaps have been used for rendering textures.
+
+\section{Application of parametric curves and surfaces}
+
+The surface was created as a parametric surface, this is implemented by feeding the perlin noise function into the Three.js parametric surface model.
+This results in a higher visual quality, i.e. removes then blockyness that comes from normal triangulated planes.
+
+\section{Application of skeletal animation}
+
+An example of a pedestrian is seen walking down a road in the city,
+this pedestrian demonstrates skeletal animation by having a walking animation.
+
+\section{Visual quality control}
+
+anti-aliasing was enabled to prevent aliasing.
+The standard lighting model in three.js is used to allow for some degree of physical based lighting, which takes into account the roughness and metalness of a material.
+
+\end{document}

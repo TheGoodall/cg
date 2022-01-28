@@ -330,8 +330,19 @@ rotation.x, rotation.y, rotation.z = 0
 const quaternion = new THREE.Quaternion();
 quaternion.setFromEuler(rotation);
 
-
+let mixer = null;
+let ped = null
 const gltf_loader = new GLTFLoader();
+gltf_loader.load('blender/HUMAN.glb', function( gltf ) {
+	gltf.scene.scale.x = 5
+	gltf.scene.scale.y = 5
+	gltf.scene.scale.z = 5
+	mixer = new THREE.AnimationMixer(gltf.scene);
+	const animationAction = mixer.clipAction(gltf.animations[0]).play()
+	ped = gltf.scene
+
+	scene.add(ped)
+})
 gltf_loader.load('blender/building_cube.glb', function(gltf) {
     const mesh = gltf.scene.children[1];
 
@@ -399,11 +410,20 @@ function animate() {
     requestAnimationFrame(animate);
 
     const time = performance.now();
+	const delta = (time - prevTime) / 1000;
+
+	if (mixer != null) {
+		mixer.update(delta)
+		ped.position.z += 8 * delta;
+		ped.position.y = TILES.perlin_noise(ped.position.x, ped.position.z, 1000, 900) * 150
+		if (ped.position.z > 500) {
+			ped.position.z = -500
+		}
+	}
 
 
     if (controls.isLocked === true) {
 
-        const delta = (time - prevTime) / 1000;
 
         velocity.x -= velocity.x * 10.0 * delta;
         velocity.z -= velocity.z * 10.0 * delta;
